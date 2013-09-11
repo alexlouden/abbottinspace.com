@@ -1,3 +1,10 @@
+Array.prototype.remove = (args...) ->
+  output = []
+  for arg in args
+    index = @indexOf arg
+    output.push @splice(index, 1) if index isnt -1
+  output = output[0] if args.length is 1
+  output
 
 getRandom = (min, max) ->
   min + Math.floor(Math.random() * (max - min + 1))
@@ -61,7 +68,9 @@ class SpaceShip
   float: (tdiff) ->
 
 class Bullet extends SpaceShip
-  BULLET_ACC = 5
+  BULLET_ACC = 50
+  BULLET_INIT_VEL = 5
+  
   constructor: (player) ->
     h = 10
     super("Bullet", 1, h)
@@ -88,6 +97,12 @@ class Bullet extends SpaceShip
     @velocity.x = player.velocity.x
     @velocity.y = player.velocity.y
     
+    xrot = Math.cos(@line.getRotation() + Math.PI / 2)
+    yrot = Math.sin(@line.getRotation() + Math.PI / 2)
+    
+    @velocity.x += BULLET_INIT_VEL * xrot
+    @velocity.y += BULLET_INIT_VEL * yrot
+    
   step: (frame) ->
     tdiff = frame.timeDiff / 1000
     
@@ -103,6 +118,13 @@ class Bullet extends SpaceShip
     @line.setX @line.getX() + @velocity.x
     @line.setY @line.getY() + @velocity.y
     
+    if (@line.getX() < -20 or
+    @line.getY() < -20 or
+    @line.getX() > width + 20 or
+    @line.getY() > height + 20)
+      console.log 'delete'
+      delete this
+      
 class Player extends SpaceShip
   @forward = false
   @backward = false
@@ -113,7 +135,7 @@ class Player extends SpaceShip
   FWD_ACC = 4 # px/s
   ROT_ACC = 8 # deg/s
   BRAKE_STRENGTH = 0.90
-  SHOOTING_FREQ = 300
+  SHOOTING_FREQ = 100
   
   constructor: ->
     super("Human", 30, 50)
@@ -234,7 +256,7 @@ class Player extends SpaceShip
       @velocity.rot *= BRAKE_STRENGTH
     
     # vel
-    @velocity.x += @acceleration.x * tdiff
+    @velocity.x += @acceleration.x * tdiff # should it be /tdiff?
     @velocity.y += @acceleration.y * tdiff
     @velocity.rot += @acceleration.rot * tdiff
 
