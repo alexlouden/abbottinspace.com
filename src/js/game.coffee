@@ -48,7 +48,7 @@ class SpaceShip
       x: 0
       y: 0
       rot: 0
-
+      
     @acceleration =
       x: 0
       y: 0
@@ -57,10 +57,52 @@ class SpaceShip
   makeShip: (width, height) ->
     @ship = new Kinetic.Group()
     return
-    
+  
   float: (tdiff) ->
-            
 
+class Bullet extends SpaceShip
+  BULLET_ACC = 5
+  constructor: (player) ->
+    h = 10
+    super("Bullet", 1, h)
+    
+    rot = player.ship.getRotation() - Math.PI/2
+    x = player.ship.getX() - 110 * Math.cos(rot)
+    y = player.ship.getY() - 110 * Math.sin(rot)
+    
+    @line = new Kinetic.Line(
+      points: [0, 0, 0, h]
+      stroke: 'white'
+      strokeWidth: 2
+      strokeEnabled: true
+      shadowColor: 'red'
+      shadowBlur: 40
+      shadowOpacity: 1
+      lineCap: 'round'
+    )
+    @line.setX(x)
+    @line.setY(y)
+    @line.setRotation(player.ship.getRotation())
+    window.bulletlayer.add @line
+    
+    @velocity.x = player.velocity.x
+    @velocity.y = player.velocity.y
+    
+  step: (frame) ->
+    tdiff = frame.timeDiff / 1000
+    
+    xrot = Math.cos(@line.getRotation() + Math.PI / 2)
+    yrot = Math.sin(@line.getRotation() + Math.PI / 2)
+    
+    @acceleration.x = BULLET_ACC * xrot
+    @acceleration.y = BULLET_ACC * yrot
+    
+    @velocity.x += @acceleration.x * tdiff
+    @velocity.y += @acceleration.y * tdiff
+    
+    @line.setX @line.getX() + @velocity.x
+    @line.setY @line.getY() + @velocity.y
+    
 class Player extends SpaceShip
   @forward = false
   @backward = false
@@ -71,6 +113,7 @@ class Player extends SpaceShip
   FWD_ACC = 4 # px/s
   ROT_ACC = 8 # deg/s
   BRAKE_STRENGTH = 0.90
+  SHOOTING_FREQ = 300
   
   constructor: ->
     super("Human", 30, 50)
@@ -82,7 +125,9 @@ class Player extends SpaceShip
     @ship.setX width / 2
     @ship.setY height / 2
     @ship.setRotationDeg 180
-    
+    @bullets = []
+    @bullet_last_shot = 0
+  
   makeShip: (width, height, img) ->
     @ship = new Kinetic.Group()
     
@@ -133,7 +178,7 @@ class Player extends SpaceShip
       height: imgsize[1]
       rotationDeg: 180
     )
-    
+  
   keyDownHandler: (event) =>
     switch event.which
       when 38 then @forward = true
@@ -145,7 +190,7 @@ class Player extends SpaceShip
       else
         console.log event.which
     return
-    
+  
   keyUpHandler: (event) =>
     switch event.which
       when 38 then @forward = false
@@ -156,7 +201,9 @@ class Player extends SpaceShip
       when 88 then @brake = false
     return
   
-  step: (tdiff) =>
+  step: (frame) =>
+    tdiff = frame.timeDiff / 1000
+    
     xrot = Math.cos(@ship.getRotation() + Math.PI / 2)
     yrot = Math.sin(@ship.getRotation() + Math.PI / 2)
     
@@ -208,7 +255,24 @@ class Player extends SpaceShip
     if @ship.getY() > height + @height
       @ship.setY @ship.getY() - height - @ship.rad  # bottom
     
-
+    # bullets
+    if @shooting
+      @handle_bullets frame
+    
+    for bullet in @bullets
+      bullet.step frame
+    
+  handle_bullets: (frame) ->
+        
+    if frame.time - @bullet_last_shot > SHOOTING_FREQ
+      @bullet_last_shot = frame.time
+      
+      console.log 'created'
+      
+      bullet = new Bullet(this)
+      @bullets.push bullet
+      
+      
 window.onload = ->
     
   stage = new Kinetic.Stage(
@@ -231,11 +295,12 @@ window.onload = ->
   layer = new Kinetic.Layer()
   layer.add player.ship
   stage.add layer
-  window.player = player
+  root.player = player
+  
+  root.bulletlayer = layer
   
   anim = new Kinetic.Animation((frame) ->
-    tdiff = frame.timeDiff / 1000
-    player.step tdiff
+    player.step frame
   , layer)
   anim.start()
   
