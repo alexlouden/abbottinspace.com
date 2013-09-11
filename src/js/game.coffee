@@ -86,25 +86,34 @@ class Player extends SpaceShip
   makeShip: (width, height, img) ->
     @ship = new Kinetic.Group()
     
+    @ship.exhaust_tip = {x: 0, y: -height/3 - 150}
+    @ship.rad = Math.max(width, height)
+    
     # Draw exhaust
     exhaust = new Kinetic.Shape(
       drawFunc: (canvas) ->
+        ship = window.player.ship
         context = canvas.getContext()
+
+        top_left = {x: width/2, y: -height/3 - 65}
+        top_right = {x: -width/2, y: -height/3 - 65}
+        
         context.beginPath()
-        context.moveTo(width/2,  -height/3-65)  # top left
-        context.lineTo(-width/2, -height/3-65) # top right
+        context.moveTo(top_left.x, top_left.y)
+        context.lineTo(top_right.x, top_left.y)
         context.bezierCurveTo(
-          -width/2, -height/3 - 65,
-          0,        -height/3 - 100,
-          0,        -height/3 - 150
+          top_right.x,        top_right.y,
+          0,                  -height/3 - 100,
+          ship.exhaust_tip.x, ship.exhaust_tip.y
         )
         context.bezierCurveTo(
-          0,        -height/3 - 150,
-          0,        -height/3 - 100,
-          width/2,  -height/3 - 65
+          ship.exhaust_tip.x, ship.exhaust_tip.y,
+          0,                  -height/3 - 100,
+          top_left.x,         top_left.y,
         )
         context.closePath()
         canvas.fill(this)
+        
       strokeEnabled: false
       fill: 'orange'
       shadowColor: 'orange'
@@ -112,7 +121,7 @@ class Player extends SpaceShip
     )
     @ship.add exhaust
     @ship.exhaust = exhaust
-    @ship.exhaust.hide()
+    @ship.exhaust.hide
     
     # Draw ship
     imgsize = [120, 210]
@@ -124,7 +133,6 @@ class Player extends SpaceShip
       height: imgsize[1]
       rotationDeg: 180
     )
-    
     
   keyDownHandler: (event) =>
     switch event.which
@@ -156,13 +164,16 @@ class Player extends SpaceShip
     if @forward
       @acceleration.x = FWD_ACC * xrot
       @acceleration.y = FWD_ACC * yrot
+      @ship.exhaust.show()
     else if @backward
       @acceleration.x = -FWD_ACC * xrot
       @acceleration.y = -FWD_ACC * yrot
+      @ship.exhaust.hide()
     else
       @acceleration.x = 0
       @acceleration.y = 0
-        
+      @ship.exhaust.hide()
+      
     if @left
       @acceleration.rot = -ROT_ACC
     else if @right
@@ -180,6 +191,8 @@ class Player extends SpaceShip
     @velocity.y += @acceleration.y * tdiff
     @velocity.rot += @acceleration.rot * tdiff
 
+    @ship.exhaust_tip.x = - 30 * Math.sin @velocity.rot/2
+
     # pos
     @ship.setX @ship.getX() + @velocity.x
     @ship.setY @ship.getY() + @velocity.y
@@ -187,13 +200,13 @@ class Player extends SpaceShip
 
     # wrap
     if @ship.getX() < -@height / 2
-      @ship.setX @ship.getX() + width + 100  # left
+      @ship.setX @ship.getX() + width + @ship.rad  # left
     if @ship.getY() < -@height / 2
-      @ship.setY @ship.getY() + height + 100  # top
+      @ship.setY @ship.getY() + height + @ship.rad  # top
     if @ship.getX() > width + @height
-      @ship.setX @ship.getX() - width - 100   # right
+      @ship.setX @ship.getX() - width - @ship.rad   # right
     if @ship.getY() > height + @height
-      @ship.setY @ship.getY() - height - 100  # bottom
+      @ship.setY @ship.getY() - height - @ship.rad  # bottom
     
 
 window.onload = ->
@@ -218,6 +231,7 @@ window.onload = ->
   layer = new Kinetic.Layer()
   layer.add player.ship
   stage.add layer
+  window.player = player
   
   anim = new Kinetic.Animation((frame) ->
     tdiff = frame.timeDiff / 1000
