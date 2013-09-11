@@ -191,7 +191,7 @@ class Player extends SpaceShip
     @velocity.y += @acceleration.y * tdiff
     @velocity.rot += @acceleration.rot * tdiff
 
-    @ship.exhaust_tip.x = - 30 * Math.sin @velocity.rot/2
+    @ship.exhaust_tip.x = - 40 * Math.sin @velocity.rot/3
 
     # pos
     @ship.setX @ship.getX() + @velocity.x
