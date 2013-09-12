@@ -276,9 +276,9 @@ class Player extends SpaceShip
     @ship.setRotationDeg @ship.getRotationDeg() + @velocity.rot
 
     # wrap
-    if @ship.getX() < -@height / 2
+    if @ship.getX() < -@ship.rad/2
       @ship.setX @ship.getX() + width + @ship.rad  # left
-    if @ship.getY() < -@height / 2
+    if @ship.getY() < -@ship.rad/2
       @ship.setY @ship.getY() + height + @ship.rad  # top
     if @ship.getX() > width + @ship.rad/2
       @ship.setX @ship.getX() - width - @ship.rad   # right
