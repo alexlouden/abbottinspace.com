@@ -122,8 +122,12 @@ class Bullet extends SpaceShip
     @line.getY() < -20 or
     @line.getX() > width + 20 or
     @line.getY() > height + 20)
-      console.log 'delete'
-      delete this
+      # Out of bounds
+      window.player.bullets.remove(this)
+      
+      # if window.bulletlayer
+        # window.bulletlayer.remove(this.line)
+      this.line.remove()
       
 class Player extends SpaceShip
   @forward = false
@@ -282,18 +286,16 @@ class Player extends SpaceShip
       @handle_bullets frame
     
     for bullet in @bullets
-      bullet.step frame
+      if bullet
+        bullet.step frame
     
   handle_bullets: (frame) ->
         
     if frame.time - @bullet_last_shot > SHOOTING_FREQ
       @bullet_last_shot = frame.time
       
-      console.log 'created'
-      
       bullet = new Bullet(this)
       @bullets.push bullet
-      
       
 window.onload = ->
     
