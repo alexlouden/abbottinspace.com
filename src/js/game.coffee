@@ -76,8 +76,8 @@ class Bullet extends SpaceShip
     super("Bullet", 1, h)
     
     rot = player.ship.getRotation() - Math.PI/2
-    x = player.ship.getX() - 110 * Math.cos(rot)
-    y = player.ship.getY() - 110 * Math.sin(rot)
+    x = player.ship.getX() - 100 * Math.cos(rot)
+    y = player.ship.getY() - 100 * Math.sin(rot)
     
     @line = new Kinetic.Line(
       points: [0, 0, 0, h]
@@ -124,9 +124,6 @@ class Bullet extends SpaceShip
     @line.getY() > height + 20)
       # Out of bounds
       window.player.bullets.remove(this)
-      
-      # if window.bulletlayer
-        # window.bulletlayer.remove(this.line)
       this.line.remove()
       
 class Player extends SpaceShip
@@ -136,13 +133,13 @@ class Player extends SpaceShip
   @right = false
   @shooting = false
   
-  FWD_ACC = 4 # px/s
+  FWD_ACC = 6 # px/s
   ROT_ACC = 8 # deg/s
   BRAKE_STRENGTH = 0.90
   SHOOTING_FREQ = 100
   
   constructor: ->
-    super("Human", 30, 50)
+    super("Human", 120, 210)
     
     imageObj = new Image()
     imageObj.onload = @makeShip(@width, @height, imageObj)
@@ -157,7 +154,7 @@ class Player extends SpaceShip
   makeShip: (width, height, img) ->
     @ship = new Kinetic.Group()
     
-    @ship.exhaust_tip = {x: 0, y: -height/3 - 150}
+    @ship.exhaust_tip = {x: 0, y: -height/12 - 150}
     @ship.rad = Math.max(width, height)
     
     # Draw exhaust
@@ -166,20 +163,20 @@ class Player extends SpaceShip
         ship = window.player.ship
         context = canvas.getContext()
 
-        top_left = {x: width/2, y: -height/3 - 65}
-        top_right = {x: -width/2, y: -height/3 - 65}
+        top_left = {x: width/8, y: -height/12 - 65}
+        top_right = {x: -width/8, y: -height/12 - 65}
         
         context.beginPath()
         context.moveTo(top_left.x, top_left.y)
         context.lineTo(top_right.x, top_left.y)
         context.bezierCurveTo(
           top_right.x,        top_right.y,
-          0,                  -height/3 - 100,
+          0,                  -height/12 - 100,
           ship.exhaust_tip.x, ship.exhaust_tip.y
         )
         context.bezierCurveTo(
           ship.exhaust_tip.x, ship.exhaust_tip.y,
-          0,                  -height/3 - 100,
+          0,                  -height/12 - 100,
           top_left.x,         top_left.y,
         )
         context.closePath()
@@ -195,8 +192,15 @@ class Player extends SpaceShip
     @ship.exhaust.hide
     
     # Draw ship
-    imgsize = [120, 210]
-    @ship.add new Kinetic.Image(
+    @shipimg = new Kinetic.Image(
+      image: img
+      x: width/2
+      y: height/2
+      width: width
+      height: height
+      rotationDeg: 180
+    )
+    @ship.add @shipimg
       image: img
       x: imgsize[0]/2
       y: imgsize[1]/2
@@ -276,9 +280,9 @@ class Player extends SpaceShip
       @ship.setX @ship.getX() + width + @ship.rad  # left
     if @ship.getY() < -@height / 2
       @ship.setY @ship.getY() + height + @ship.rad  # top
-    if @ship.getX() > width + @height
+    if @ship.getX() > width + @ship.rad/2
       @ship.setX @ship.getX() - width - @ship.rad   # right
-    if @ship.getY() > height + @height
+    if @ship.getY() > height + @ship.rad/2
       @ship.setY @ship.getY() - height - @ship.rad  # bottom
     
     # bullets
