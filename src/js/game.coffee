@@ -201,13 +201,23 @@ class Player extends SpaceShip
       rotationDeg: 180
     )
     @ship.add @shipimg
+    
+    @ship2 = @makeFakeShip(img)
+    @ship3 = @makeFakeShip(img)
+    @ship4 = @makeFakeShip(img)
+    
+  makeFakeShip: (img) ->
+    mirror_ship = new Kinetic.Group()
+    mirror_ship.add new Kinetic.Image(
       image: img
-      x: imgsize[0]/2
-      y: imgsize[1]/2
-      width: imgsize[0]
-      height: imgsize[1]
+      x: @width/2
+      y: @height/2
+      width: @width
+      height: @height
       rotationDeg: 180
     )
+    mirror_ship.hide()
+    mirror_ship
   
   keyDownHandler: (event) =>
     switch event.which
@@ -275,15 +285,41 @@ class Player extends SpaceShip
     @ship.setY @ship.getY() + @velocity.y
     @ship.setRotationDeg @ship.getRotationDeg() + @velocity.rot
 
-    # wrap
-    if @ship.getX() < -@ship.rad/2
-      @ship.setX @ship.getX() + width + @ship.rad  # left
-    if @ship.getY() < -@ship.rad/2
-      @ship.setY @ship.getY() + height + @ship.rad  # top
-    if @ship.getX() > width + @ship.rad/2
-      @ship.setX @ship.getX() - width - @ship.rad   # right
-    if @ship.getY() > height + @ship.rad/2
-      @ship.setY @ship.getY() - height - @ship.rad  # bottom
+    # wrap left
+    if @ship.getX() < @width
+      @ship2.show()
+      @ship2.setX @ship.getX() + width
+      @ship2.setY @ship.getY()
+      @ship2.setRotation @ship.getRotation()
+    # wrap right
+    else
+      @ship2.hide()
+    
+    # wrap top
+    if @ship.getY() < @ship.rad
+      @ship3.show()
+      @ship3.setX @ship.getX()
+      @ship3.setY @ship.getY() + height
+      @ship3.setRotation @ship.getRotation()
+    else
+      @ship3.hide()
+      
+    if @ship.getY() < @ship.rad and @ship.getX() < @ship.rad
+      @ship4.show()
+      @ship4.setX @ship.getX() + width
+      @ship4.setY @ship.getY() + height
+      @ship4.setRotation @ship.getRotation()
+    else
+      @ship4.hide()
+      
+    if @ship.getX() < -@ship.rad
+      @ship.setX @ship.getX() + width   # left
+    if @ship.getY() < -@ship.rad
+      @ship.setY @ship.getY() + height  # top
+    if @ship.getX() > width - @ship.rad
+      @ship.setX @ship.getX() - width   # right
+    if @ship.getY() > height - @ship.rad
+      @ship.setY @ship.getY() - height  # bottom
     
     # bullets
     if @shooting
@@ -322,6 +358,9 @@ window.onload = ->
   
   layer = new Kinetic.Layer()
   layer.add player.ship
+  layer.add player.ship2
+  layer.add player.ship3
+  layer.add player.ship4
   stage.add layer
   root.player = player
   
