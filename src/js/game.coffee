@@ -207,13 +207,21 @@ class Player extends SpaceShip
     )
     @ship.add @shipimg
     
-    @ship2 = @makeFakeShip(img)
-    @ship3 = @makeFakeShip(img)
-    @ship4 = @makeFakeShip(img)
+    @ship2 = @makeFakeShip(img, exhaust.clone())
+    @ship3 = @makeFakeShip(img, exhaust.clone())
+    @ship4 = @makeFakeShip(img, exhaust.clone())
     
-  makeFakeShip: (img) ->
-    mirror_ship = new Kinetic.Group()
-    mirror_ship.add new Kinetic.Image(
+    console.log @ship2
+    
+  makeFakeShip: (img, exhaust) ->
+    
+    ship = new Kinetic.Group()
+    
+    ship.exhaust = exhaust
+    ship.exhaust.hide()
+    
+    ship.add exhaust
+    ship.add new Kinetic.Image(
       image: img
       x: @width/2
       y: @height/2
@@ -221,8 +229,8 @@ class Player extends SpaceShip
       height: @height
       rotationDeg: 180
     )
-    mirror_ship.hide()
-    mirror_ship
+    ship.hide()
+    ship
   
   keyDownHandler: (event) =>
     switch event.which
@@ -257,14 +265,23 @@ class Player extends SpaceShip
       @acceleration.x = FWD_ACC * xrot
       @acceleration.y = FWD_ACC * yrot
       @ship.exhaust.show()
+      @ship2.exhaust.show()
+      @ship3.exhaust.show()
+      @ship4.exhaust.show()
     else if @backward
       @acceleration.x = -FWD_ACC * xrot
       @acceleration.y = -FWD_ACC * yrot
       @ship.exhaust.hide()
+      @ship2.exhaust.hide()
+      @ship3.exhaust.hide()
+      @ship4.exhaust.hide()
     else
       @acceleration.x = 0
       @acceleration.y = 0
       @ship.exhaust.hide()
+      @ship2.exhaust.hide()
+      @ship3.exhaust.hide()
+      @ship4.exhaust.hide()
       
     if @left
       @acceleration.rot = -ROT_ACC
