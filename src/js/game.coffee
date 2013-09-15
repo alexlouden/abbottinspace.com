@@ -395,3 +395,10 @@ window.onload = ->
   
   $(document).keydown player.keyDownHandler
   $(document).keyup player.keyUpHandler
+  
+resizeCanvas = ->
+  $('canvas').width('100%').height('100%')
+  $('.kineticjs-content').width('100%').height('100%')
+
+window.onresize = ->
+  resizeCanvas()
