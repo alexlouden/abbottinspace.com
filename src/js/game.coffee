@@ -97,6 +97,7 @@ class Bullet extends SpaceShip
     @line.setX(x)
     @line.setY(y)
     @line.setRotation(player.ship.getRotation())
+    @line.gameobject = this
     window.bulletlayer.add @line
     
     @velocity.x = player.velocity.x
@@ -123,13 +124,35 @@ class Bullet extends SpaceShip
     @line.setX @line.getX() + @velocity.x
     @line.setY @line.getY() + @velocity.y
     
+    @handleIntersections(
+      x: @line.getX() + xrot * 10
+      y: @line.getY() + yrot * 10
+    )
+    
+    # Out of bounds
     if (@line.getX() < -20 or
     @line.getY() < -20 or
     @line.getX() > width + 20 or
     @line.getY() > height + 20)
-      # Out of bounds
       window.player.bullets.remove(this)
       this.line.remove()
+      
+  handleIntersections: (pos) ->
+    intersection = window.stage.getIntersection(pos)
+    # Intersected something that has a shape
+    if intersection and intersection.hasOwnProperty('shape')
+      window.int = intersection
+      
+      if intersection.shape.hasOwnProperty('gameobject')
+        gameobject = intersection.shape.gameobject
+        
+        console.log gameobject
+        if gameobject.name == 'Human'
+          console.log 'You shot yourself'
+        
+      else
+        console.log intersection
+        
       
 class Player extends SpaceShip
   @forward = false
@@ -153,6 +176,10 @@ class Player extends SpaceShip
     @ship.setX width / 2
     @ship.setY height / 2
     @ship.setRotationDeg 180
+    @ship.gameobject = this
+    @ship.exhaust.gameobject = this
+    @shipimg.gameobject = this
+    
     @bullets = []
     @bullet_last_shot = 0
   
@@ -211,17 +238,16 @@ class Player extends SpaceShip
     @ship3 = @makeFakeShip(img, exhaust.clone())
     @ship4 = @makeFakeShip(img, exhaust.clone())
     
-    console.log @ship2
-    
   makeFakeShip: (img, exhaust) ->
     
     ship = new Kinetic.Group()
     
     ship.exhaust = exhaust
     ship.exhaust.hide()
+    ship.exhaust.gameobject = this
     
     ship.add exhaust
-    ship.add new Kinetic.Image(
+    image = new Kinetic.Image(
       image: img
       x: @width/2
       y: @height/2
@@ -229,6 +255,9 @@ class Player extends SpaceShip
       height: @height
       rotationDeg: 180
     )
+    ship.add image
+    image.gameobject = this
+    ship.gameobject = this
     ship.hide()
     ship
   
@@ -241,7 +270,7 @@ class Player extends SpaceShip
       when 32 then @shooting = true  # space
       when 88 then @brake = true     # x
       else
-        console.log event.which
+        # console.log event.which
     return
   
   keyUpHandler: (event) =>
