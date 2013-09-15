@@ -108,7 +108,7 @@ class Bullet extends SpaceShip
     
     @velocity.x += BULLET_INIT_VEL * xrot
     @velocity.y += BULLET_INIT_VEL * yrot
-    
+  
   step: (frame) ->
     tdiff = frame.timeDiff / 1000
     
@@ -134,9 +134,8 @@ class Bullet extends SpaceShip
     @line.getY() < -20 or
     @line.getX() > width + 20 or
     @line.getY() > height + 20)
-      window.player.bullets.remove(this)
-      this.line.remove()
-      
+      @destroy()
+  
   handleIntersections: (pos) ->
     intersection = window.stage.getIntersection(pos)
     # Intersected something that has a shape
@@ -149,10 +148,44 @@ class Bullet extends SpaceShip
         console.log gameobject
         if gameobject.name == 'Human'
           console.log 'You shot yourself'
+        else if gameobject.name == 'Enemy'
+          if gameobject.circle.getFill() == 'green'
+            gameobject.circle.setFill('red')
+          else
+            gameobject.circle.setFill('green')
+        
+        @destroy()
         
       else
         console.log intersection
-        
+  
+  destroy: ->
+    window.player.bullets.remove(this)
+    @line.remove()
+
+class Enemy extends SpaceShip
+  FWD_ACC = 1
+  
+  constructor: ->
+    size = 50
+    super("Enemy", size, size)
+    @makeShip(size)
+    @ship.setX(width/4)
+    @ship.setY(height/2)
+  
+  makeShip: (radius) ->
+    @ship = new Kinetic.Group()
+    
+    @circle = new Kinetic.Circle(
+      x: 0
+      y: 0
+      fill: 'green'
+      radius: radius
+    )
+    @circle.gameobject = this
+    @ship.add @circle
+    @ship.gameobject = this
+    
       
 class Player extends SpaceShip
   @forward = false
@@ -237,7 +270,7 @@ class Player extends SpaceShip
     @ship2 = @makeFakeShip(img, exhaust.clone())
     @ship3 = @makeFakeShip(img, exhaust.clone())
     @ship4 = @makeFakeShip(img, exhaust.clone())
-    
+  
   makeFakeShip: (img, exhaust) ->
     
     ship = new Kinetic.Group()
@@ -379,7 +412,7 @@ class Player extends SpaceShip
     for bullet in @bullets
       if bullet
         bullet.step frame
-    
+  
   handle_bullets: (frame) ->
         
     if frame.time - @bullet_last_shot > SHOOTING_FREQ
@@ -412,10 +445,12 @@ window.onload = ->
   layer.add player.ship2
   layer.add player.ship3
   layer.add player.ship4
-  stage.add layer
-  root.player = player
+  
+  root.enemy = new Enemy()
+  layer.add root.enemy.ship
   
   root.bulletlayer = layer
+  stage.add layer
   
   anim = new Kinetic.Animation((frame) ->
     player.step frame
