@@ -138,8 +138,8 @@ class Player extends SpaceShip
   @right = false
   @shooting = false
   
-  FWD_ACC = 6 # px/s
-  ROT_ACC = 8 # deg/s
+  FWD_ACC = 8 # px/s
+  ROT_ACC = 4 # deg/s
   BRAKE_STRENGTH = 0.90
   SHOOTING_FREQ = 100
   
