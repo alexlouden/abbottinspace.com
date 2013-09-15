@@ -79,6 +79,11 @@ class Bullet extends SpaceShip
     x = player.ship.getX() - 100 * Math.cos(rot)
     y = player.ship.getY() - 100 * Math.sin(rot)
     
+    if x < 0
+      x += width
+    if y < 0
+      y += height
+    
     @line = new Kinetic.Line(
       points: [0, 0, 0, h]
       stroke: 'white'
