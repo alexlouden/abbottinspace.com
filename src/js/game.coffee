@@ -9,6 +9,13 @@ Array.prototype.remove = (args...) ->
 getRandom = (min, max) ->
   min + Math.floor(Math.random() * (max - min + 1))
 
+# TODOS
+# Add motion and gravity to enemy
+# Add enemy/ship collisions
+# Make ship explode on hit
+# Spawn multiple enemies
+
+
 # canvas dimensions
 width = $("#game").width()
 height = $("#game").height()
