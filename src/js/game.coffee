@@ -13,6 +13,9 @@ getRandom = (min, max) ->
 width = $("#game").width()
 height = $("#game").height()
 
+NEWTONS_G = 5000
+GRAVITY_THRESH = 100
+
 generate_star_group = ->
   layer = new Kinetic.Layer()
   group = new Kinetic.Group()
@@ -123,7 +126,7 @@ class Bullet extends SpaceShip
     
     @line.setX @line.getX() + @velocity.x
     @line.setY @line.getY() + @velocity.y
-    
+
     @handleIntersections(
       x: @line.getX() + xrot * 10
       y: @line.getY() + yrot * 10
@@ -164,7 +167,8 @@ class Bullet extends SpaceShip
     @line.remove()
 
 class Enemy extends SpaceShip
-  FWD_ACC = 1
+  FWD_ACC: 1
+  mass: 20
   
   constructor: ->
     size = 50
@@ -188,16 +192,18 @@ class Enemy extends SpaceShip
     
       
 class Player extends SpaceShip
-  @forward = false
-  @backward = false
-  @left = false
-  @right = false
-  @shooting = false
+  forward: false
+  backward: false
+  left: false
+  right: false
+  shooting: false
   
-  FWD_ACC = 8 # px/s
-  ROT_ACC = 4 # deg/s
-  BRAKE_STRENGTH = 0.90
-  SHOOTING_FREQ = 100
+  mass: 10
+
+  FWD_ACC: 8 # px/s
+  ROT_ACC: 4 # deg/s
+  BRAKE_STRENGTH: 0.90
+  SHOOTING_FREQ: 100
   
   constructor: ->
     super("Human", 120, 210)
@@ -324,15 +330,15 @@ class Player extends SpaceShip
     
     # acc
     if @forward
-      @acceleration.x = FWD_ACC * xrot
-      @acceleration.y = FWD_ACC * yrot
+      @acceleration.x = @FWD_ACC * xrot
+      @acceleration.y = @FWD_ACC * yrot
       @ship.exhaust.show()
       @ship2.exhaust.show()
       @ship3.exhaust.show()
       @ship4.exhaust.show()
     else if @backward
-      @acceleration.x = -FWD_ACC * xrot
-      @acceleration.y = -FWD_ACC * yrot
+      @acceleration.x = -@FWD_ACC * xrot
+      @acceleration.y = -@FWD_ACC * yrot
       @ship.exhaust.hide()
       @ship2.exhaust.hide()
       @ship3.exhaust.hide()
@@ -346,17 +352,31 @@ class Player extends SpaceShip
       @ship4.exhaust.hide()
       
     if @left
-      @acceleration.rot = -ROT_ACC
+      @acceleration.rot = -@ROT_ACC
     else if @right
-      @acceleration.rot = ROT_ACC
+      @acceleration.rot = @ROT_ACC
     else
       @acceleration.rot = 0
     
     if @brake
-      @velocity.x *= BRAKE_STRENGTH # todo add tdiff as a factor
-      @velocity.y *= BRAKE_STRENGTH
-      @velocity.rot *= BRAKE_STRENGTH
+      @velocity.x *= @BRAKE_STRENGTH # todo add tdiff as a factor
+      @velocity.y *= @BRAKE_STRENGTH
+      @velocity.rot *= @BRAKE_STRENGTH
     
+    # gravity
+    dx = enemy.ship.getX() - @ship.getX()
+    dy = enemy.ship.getY() - @ship.getY()
+    dsquared = (dx * dx) + (dy * dy)
+    gravity_force = NEWTONS_G * (@mass * enemy.mass) / dsquared
+    if gravity_force > GRAVITY_THRESH
+      gravity_force = GRAVITY_THRESH
+    gravity_acceleration = gravity_force / @mass
+    gravity_direction = Math.atan2(dx, dy)
+    @acceleration.x += gravity_acceleration * Math.sin(gravity_direction)
+    @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
+    
+    # root
+
     # vel
     @velocity.x += @acceleration.x * tdiff # should it be /tdiff?
     @velocity.y += @acceleration.y * tdiff
@@ -415,7 +435,7 @@ class Player extends SpaceShip
   
   handle_bullets: (frame) ->
         
-    if frame.time - @bullet_last_shot > SHOOTING_FREQ
+    if frame.time - @bullet_last_shot > @SHOOTING_FREQ
       @bullet_last_shot = frame.time
       
       bullet = new Bullet(this)
