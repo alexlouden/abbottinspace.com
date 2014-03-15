@@ -17,7 +17,7 @@ module.exports = (grunt) ->
         ext: ".js"
       
         options:
-          sourceMap: true
+          sourceMap: false
           
     # Copy JS
     copy:
