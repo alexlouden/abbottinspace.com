@@ -175,8 +175,9 @@ class Bullet extends SpaceShip
 
 class Enemy extends SpaceShip
   FWD_ACC: 1
+  ROT_ACC: 4
   mass: 10
-  
+
   constructor: ->
     @size = 50
     super("Enemy", @size, @size)
@@ -212,6 +213,15 @@ class Enemy extends SpaceShip
     @acceleration.x += gravity_acceleration * Math.sin(gravity_direction)
     @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
 
+    # aiming
+    rotation_offset = gravity_direction > @ship.getRotation()
+    if rotation_offset > 0
+      @acceleration.rot = -@ROT_ACC
+    else if rotation_offset < 0
+      @acceleration.rot = @ROT_ACC
+    else
+      @acceleration.rot = 0
+
     # vel
     @velocity.x += @acceleration.x * tdiff # should it be /tdiff?
     @velocity.y += @acceleration.y * tdiff
@@ -241,9 +251,6 @@ class Enemy extends SpaceShip
     # wrap right
     if @ship.getX() > width + @size
       @ship.setX @ship.getX() - width - @size * 2
-
-
-
 
 
 class Player extends SpaceShip
