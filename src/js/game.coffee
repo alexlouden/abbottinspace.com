@@ -156,13 +156,13 @@ class Bullet extends SpaceObject
         gameobject = intersection.shape.gameobject
         
         console.log gameobject
-        if gameobject.name == 'Human'
+        if gameobject.name == 'Player'
           console.log 'You shot yourself'
         else if gameobject.name == 'Enemy'
-          if gameobject.circle.getFill() == 'green'
-            gameobject.circle.setFill('red')
+          if gameobject.polygon.getFill() == 'green'
+            gameobject.polygon.setFill('red')
           else
-            gameobject.circle.setFill('green')
+            gameobject.polygon.setFill('green')
         
         @destroy()
         
@@ -180,24 +180,25 @@ class Enemy extends SpaceObject
   constructor: ->
     @size = 50
     super("Enemy", @size, @size)
-    @makeShip(@size)
+    @makeShip()
     @ship.setX(width/4)
     @ship.setY(height/2)
   
-  makeShip: (width, height) ->
+  makeShip: ->
     @ship = new Kinetic.Group()
 
-    @ship.add new Kinetic.Polygon(
+    @polygon = new Kinetic.Polygon(
       points: [
-        [       0,  height * 2/3],
-        [-width/2, -height * 1/3],
-        [ width/2, -height * 1/3]
+        [       0,   @height * 2/3],
+        [-@width/2, -@height * 1/3],
+        [ @width/2, -@height * 1/3]
       ]
       fill: "#000000"
       strokeWidth: 3
       stroke: "#ffffff"
     )
-
+    @ship.add @polygon
+    @polygon.gameobject = this
     @ship.gameobject = this
 
   step: (frame) =>
