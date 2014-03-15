@@ -175,13 +175,13 @@ class Bullet extends SpaceObject
 
 class Enemy extends SpaceObject
   FWD_ACC: 1
-  ROT_ACC: 4
+  ROT_ACC: 1
   mass: 10
 
   constructor: ->
     @size = 50
     super("Enemy", @size, @size)
-    @makeShip(@size)
+    @makeShip(@size, @size)
     @ship.setX(width/4)
     @ship.setY(height/2)
   
@@ -190,9 +190,10 @@ class Enemy extends SpaceObject
 
     @ship.add new Kinetic.Polygon(
       points: [
-        [       0,  height * 2/3],
-        [-width/2, -height * 1/3],
-        [ width/2, -height * 1/3]
+        [       0, -height * 2/3],
+        [-width/2, height * 1/3],
+        [       0, height * 1/4],
+        [ width/2, height * 1/3]
       ]
       fill: "#000000"
       strokeWidth: 3
@@ -212,19 +213,18 @@ class Enemy extends SpaceObject
     if gravity_force > GRAVITY_THRESH
       gravity_force = GRAVITY_THRESH
     gravity_acceleration = gravity_force / @mass
-    gravity_direction = Math.atan2(dx, dy)
+    gravity_direction = Math.atan2(dx, -dy)
     
-    @acceleration.x += gravity_acceleration * Math.sin(gravity_direction)
-    @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
+    # @acceleration.x += gravity_acceleration * Math.sin(gravity_direction)
+    # @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
 
     # aiming
-    rotation_offset = gravity_direction > @ship.getRotation()
-    if rotation_offset > 0
-      @acceleration.rot = -@ROT_ACC
-    else if rotation_offset < 0
-      @acceleration.rot = @ROT_ACC
+    player_direction = Math.atan2(dx, -dy)
+    rotation_offset = player_direction - @ship.getRotation()
+    if rotation_offset < 0
+      @velocity.rot = @ROT_ACC * rotation_offset
     else
-      @acceleration.rot = 0
+      @velocity.rot = -@ROT_ACC * rotation_offset
 
     # vel
     @velocity.x += @acceleration.x * tdiff # should it be /tdiff?
