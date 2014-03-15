@@ -176,6 +176,7 @@ class Bullet extends SpaceShip
 class Enemy extends SpaceShip
   FWD_ACC: 1
   mass: 20
+  MAX_V: 100
   
   constructor: ->
     size = 50
@@ -196,6 +197,47 @@ class Enemy extends SpaceShip
     @circle.gameobject = this
     @ship.add @circle
     @ship.gameobject = this
+
+  step: (frame) =>
+    tdiff = frame.timeDiff / 1000
+    
+    xrot = Math.cos(@ship.getRotation() + Math.PI / 2)
+    yrot = Math.sin(@ship.getRotation() + Math.PI / 2)
+
+    # gravity
+    dx = @ship.getX() - player.ship.getX()
+    dy = @ship.getY() - player.ship.getY()
+    dsquared = (dx * dx) + (dy * dy)
+    gravity_force = NEWTONS_G * (@mass * enemy.mass) / dsquared
+    if gravity_force > GRAVITY_THRESH
+      gravity_force = GRAVITY_THRESH
+    gravity_acceleration = gravity_force / @mass
+    gravity_direction = Math.atan2(dx, dy)
+    @acceleration.x -= gravity_acceleration * Math.sin(gravity_direction)
+    # @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
+
+    # vel
+    @velocity.x += @acceleration.x * tdiff # should it be /tdiff?
+    @velocity.y += @acceleration.y * tdiff
+    @velocity.rot += @acceleration.rot * tdiff
+
+    if @velocity.x > @MAX_V
+      @velocity.x = @MAX_V
+
+    if @velocity.y > @MAX_V
+      @velocity.y = @MAX_V
+
+    if @velocity.x < -@MAX_V
+      @velocity.x = -@MAX_V
+
+    if @velocity.y < -@MAX_V
+      @velocity.y = -@MAX_V
+
+    # pos
+    @ship.setX @ship.getX() + @velocity.x
+    @ship.setY @ship.getY() + @velocity.y
+    @ship.setRotationDeg @ship.getRotationDeg() + @velocity.rot
+    
     
       
 class Player extends SpaceShip
@@ -381,8 +423,6 @@ class Player extends SpaceShip
     gravity_direction = Math.atan2(dx, dy)
     @acceleration.x += gravity_acceleration * Math.sin(gravity_direction)
     @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
-    
-    # root
 
     # vel
     @velocity.x += @acceleration.x * tdiff # should it be /tdiff?
@@ -481,6 +521,7 @@ window.onload = ->
   
   anim = new Kinetic.Animation((frame) ->
     player.step frame
+    enemy.step frame
   , layer)
   anim.start()
   
