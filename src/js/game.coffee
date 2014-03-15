@@ -175,13 +175,12 @@ class Bullet extends SpaceObject
 
 class Enemy extends SpaceObject
   FWD_ACC: 1
-  mass: 20
-  MAX_V: 100
+  mass: 10
   
   constructor: ->
-    size = 50
-    super("Enemy", size, size)
-    @makeShip(size, size)
+    @size = 50
+    super("Enemy", @size, @size)
+    @makeShip(@size)
     @ship.setX(width/4)
     @ship.setY(height/2)
   
@@ -203,55 +202,59 @@ class Enemy extends SpaceObject
 
   step: (frame) =>
     tdiff = frame.timeDiff / 1000
-    
-    xrot = Math.cos(@ship.getRotation() + Math.PI / 2)
-    yrot = Math.sin(@ship.getRotation() + Math.PI / 2)
 
     # gravity
-    dx = @ship.getX() - player.ship.getX()
-    dy = @ship.getY() - player.ship.getY()
-    dsquared = (dx * dx) + (dy * dy)
-    gravity_force = NEWTONS_G * (@mass * enemy.mass) / dsquared
+    dx = player.ship.getX() - @ship.getX()
+    dy = player.ship.getY() - @ship.getY()
+    rsquared = (dx * dx) + (dy * dy)
+    gravity_force = NEWTONS_G * (@mass * player.mass) / rsquared
     if gravity_force > GRAVITY_THRESH
       gravity_force = GRAVITY_THRESH
     gravity_acceleration = gravity_force / @mass
     gravity_direction = Math.atan2(dx, dy)
     
-    @acceleration.x -= gravity_acceleration * Math.sin(gravity_direction)
-    # @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
+    @acceleration.x += gravity_acceleration * Math.sin(gravity_direction)
+    @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
 
     # vel
     @velocity.x += @acceleration.x * tdiff # should it be /tdiff?
     @velocity.y += @acceleration.y * tdiff
     @velocity.rot += @acceleration.rot * tdiff
 
-    if @velocity.x > @MAX_V
-      @velocity.x = @MAX_V
-
-    if @velocity.y > @MAX_V
-      @velocity.y = @MAX_V
-
-    if @velocity.x < -@MAX_V
-      @velocity.x = -@MAX_V
-
-    if @velocity.y < -@MAX_V
-      @velocity.y = -@MAX_V
+    # friction
+    @velocity.x *= 0.95
+    @velocity.y *= 0.95
 
     # pos
     @ship.setX @ship.getX() + @velocity.x
     @ship.setY @ship.getY() + @velocity.y
     @ship.setRotationDeg @ship.getRotationDeg() + @velocity.rot
     
-    
-      
+    # wrap top
+    if @ship.getY() < - @size
+      @ship.setY @ship.getY() + height + @size * 2
+
+    # wrap bottom
+    if @ship.getY() > height + @size
+      @ship.setY @ship.getY() - height - @size * 2
+
+    # wrap left
+    if @ship.getX() < - @size
+      @ship.setX @ship.getX() + width + @size * 2
+
+    # wrap right
+    if @ship.getX() > width + @size
+      @ship.setX @ship.getX() - width - @size * 2
+
 class Player extends SpaceObject
+
   forward: false
   backward: false
   left: false
   right: false
   shooting: false
   
-  mass: 10
+  mass: 1
 
   FWD_ACC: 8 # px/s
   ROT_ACC: 4 # deg/s
@@ -259,7 +262,7 @@ class Player extends SpaceObject
   SHOOTING_FREQ: 100
   
   constructor: ->
-    super("Human", 120, 210)
+    super("Player", 120, 210)
     
     imageObj = new Image()
     imageObj.onload = @makeShip(@width, @height, imageObj)
@@ -419,8 +422,8 @@ class Player extends SpaceObject
     # gravity
     dx = enemy.ship.getX() - @ship.getX()
     dy = enemy.ship.getY() - @ship.getY()
-    dsquared = (dx * dx) + (dy * dy)
-    gravity_force = NEWTONS_G * (@mass * enemy.mass) / dsquared
+    rsquared = (dx * dx) + (dy * dy)
+    gravity_force = NEWTONS_G * (@mass * enemy.mass) / rsquared
     if gravity_force > GRAVITY_THRESH
       gravity_force = GRAVITY_THRESH
     gravity_acceleration = gravity_force / @mass
