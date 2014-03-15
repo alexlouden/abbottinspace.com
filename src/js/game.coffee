@@ -192,7 +192,7 @@ class Enemy extends SpaceObject
       points: [
         [       0, -@height * 2/3],
         [-@width/2, @height * 1/3],
-        [       0,  0],
+        [       0,  @height * 1/5],
         [ @width/2, @height * 1/3]
       ]
       fill: "#000000"
