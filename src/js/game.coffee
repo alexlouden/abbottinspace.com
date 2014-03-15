@@ -215,8 +215,8 @@ class Enemy extends SpaceObject
     gravity_acceleration = gravity_force / @mass
     gravity_direction = Math.atan2(dx, -dy)
     
-    # @acceleration.x += gravity_acceleration * Math.sin(gravity_direction)
-    # @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
+    @acceleration.x += gravity_acceleration * Math.sin(gravity_direction)
+    @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
 
     # aiming
     player_direction = Math.atan2(dx, -dy)
