@@ -54,7 +54,7 @@ generate_star_group = ->
   layer.add group
   return layer
 
-class SpaceShip
+class SpaceObject
   
   constructor: (name, width, height) ->
     @name = name
@@ -77,7 +77,7 @@ class SpaceShip
   
   float: (tdiff) ->
 
-class Bullet extends SpaceShip
+class Bullet extends SpaceObject
   BULLET_ACC = 50
   BULLET_INIT_VEL = 5
   
@@ -173,7 +173,7 @@ class Bullet extends SpaceShip
     window.player.bullets.remove(this)
     @line.remove()
 
-class Enemy extends SpaceShip
+class Enemy extends SpaceObject
   FWD_ACC: 1
   ROT_ACC: 4
   mass: 10
@@ -185,17 +185,20 @@ class Enemy extends SpaceShip
     @ship.setX(width/4)
     @ship.setY(height/2)
   
-  makeShip: (radius) ->
+  makeShip: (width, height) ->
     @ship = new Kinetic.Group()
-    
-    @circle = new Kinetic.Circle(
-      x: 0
-      y: 0
-      fill: 'green'
-      radius: radius
+
+    @ship.add new Kinetic.Polygon(
+      points: [
+        [       0,  height * 2/3],
+        [-width/2, -height * 1/3],
+        [ width/2, -height * 1/3]
+      ]
+      fill: "#000000"
+      strokeWidth: 3
+      stroke: "#ffffff"
     )
-    @circle.gameobject = this
-    @ship.add @circle
+
     @ship.gameobject = this
 
   step: (frame) =>
@@ -210,6 +213,7 @@ class Enemy extends SpaceShip
       gravity_force = GRAVITY_THRESH
     gravity_acceleration = gravity_force / @mass
     gravity_direction = Math.atan2(dx, dy)
+    
     @acceleration.x += gravity_acceleration * Math.sin(gravity_direction)
     @acceleration.y += gravity_acceleration * Math.cos(gravity_direction)
 
@@ -252,8 +256,8 @@ class Enemy extends SpaceShip
     if @ship.getX() > width + @size
       @ship.setX @ship.getX() - width - @size * 2
 
+class Player extends SpaceObject
 
-class Player extends SpaceShip
   forward: false
   backward: false
   left: false
