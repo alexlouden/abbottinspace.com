@@ -97,8 +97,8 @@ class Bullet extends SpaceObject
     @line = new Kinetic.Line(
       points: [0, 0, 0, h]
       stroke: 'white'
-      strokeWidth: 2
-      strokeEnabled: true
+      strokeColourWidth: 2
+      strokeColourEnabled: true
       shadowColor: 'red'
       shadowBlur: 40
       shadowOpacity: 1
